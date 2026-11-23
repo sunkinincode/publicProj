@@ -1,0 +1,235 @@
+/**
+ * ชุดข้อมูลรายวิชาสมมติตั้งต้น (4 รายวิชา · 9 Sections)
+ * ออกแบบให้ครอบคลุมทุกเคสที่เพื่อนทั้ง 5 คนต้องนำไปพัฒนาต่อได้ทันที:
+ * 1) 322-101 : วิชาพื้นฐานหลาย Section (ใช้เป็นวิชาบังคับก่อนของ 322-102)
+ * 2) 322-102 : ต้องเรียน 322-101 มาก่อน + มี Sec ที่ชนเวลาเรียน/สอบ + มี Sec จำกัดกลุ่มสาขา
+ * 3) 895-001 : วิชา Online แบบมีเวลาเรียนชัดเจน + มี Sec ที่คาบเกี่ยวเวลา/ชนสอบกับวิชาอื่น
+ * 4) 961-101 : วิชาของวิทยาเขตภูเก็ต (03) + วิชา Online แบบไม่ระบุเวลาเรียน + แบบระบุเวลาที่ชนวิชาอื่น
+ */
+
+export const DAYS = [
+  { id: 0, nameTh: 'จันทร์', shortTh: 'จ.' },
+  { id: 1, nameTh: 'อังคาร', shortTh: 'อ.' },
+  { id: 2, nameTh: 'พุธ', shortTh: 'พ.' },
+  { id: 3, nameTh: 'พฤหัสบดี', shortTh: 'พฤ.' },
+  { id: 4, nameTh: 'ศุกร์', shortTh: 'ศ.' },
+];
+
+export const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+
+export const MOCK_SUBJECTS = [
+  {
+    id: 'mock-322-101',
+    code: '322-101',
+    nameTh: 'แคลคูลัส 1',
+    nameEn: 'CALCULUS I',
+    credits: '3((3)-0-6) หน่วยกิต',
+    creditNum: 3,
+    desc: 'ลิมิตและความต่อเนื่อง อนุพันธ์ การประยุกต์อนุพันธ์ ปริพันธ์จำกัดเขตและไม่จำกัดเขต',
+    prerequisites: [],
+    prerequisiteText: '-',
+    dept: 'สาขาวิชาคณิตศาสตร์และสถิติ',
+    faculty: 'คณะวิทยาศาสตร์',
+    campus: 'วิทยาเขตหาดใหญ่',
+    campusCode: '01',
+    semester: '2/2569',
+    sections: [
+      {
+        sec: '01',
+        seats: '80 ที่นั่ง',
+        group: 'นักศึกษาทั่วไป',
+        isRestrictedGroup: false,
+        dayTime: 'จันทร์ 09:00–10:50, พุธ 09:00–10:50',
+        room: 'L2',
+        isOnline: false,
+        instructors: ['ผศ.ดร.สมชาย ใจดี'],
+        midterm: '10 ม.ค. 2570 09:00–12:00',
+        final: '05 มี.ค. 2570 09:00–12:00',
+        slots: [
+          { day: 0, dayName: 'จันทร์', start: 540, end: 650, timeText: '09:00–10:50' },
+          { day: 2, dayName: 'พุธ', start: 540, end: 650, timeText: '09:00–10:50' },
+        ],
+      },
+      {
+        sec: '02',
+        seats: '80 ที่นั่ง',
+        group: 'นักศึกษาทั่วไป',
+        isRestrictedGroup: false,
+        dayTime: 'อังคาร 13:00–14:50, พฤหัสบดี 13:00–14:50',
+        room: 'BSc 3',
+        isOnline: false,
+        instructors: ['รศ.ดร.มานะ ตั้งใจ'],
+        midterm: '10 ม.ค. 2570 09:00–12:00',
+        final: '05 มี.ค. 2570 09:00–12:00',
+        slots: [
+          { day: 1, dayName: 'อังคาร', start: 780, end: 890, timeText: '13:00–14:50' },
+          { day: 3, dayName: 'พฤหัสบดี', start: 780, end: 890, timeText: '13:00–14:50' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'mock-322-102',
+    code: '322-102',
+    nameTh: 'แคลคูลัส 2',
+    nameEn: 'CALCULUS II',
+    credits: '3((3)-0-6) หน่วยกิต',
+    creditNum: 3,
+    desc: 'เทคนิคการหาปริพันธ์ พิกัดเชิงขั้ว อนุกรมอนันต์ และแคลคูลัสของฟังก์ชันหลายตัวแปร (รายวิชาบังคับก่อน: 322-101)',
+    prerequisites: ['322-101'],
+    prerequisiteText: 'ต้องสอบผ่านรายวิชา 322-101 แคลคูลัส 1 มาก่อน',
+    dept: 'สาขาวิชาคณิตศาสตร์และสถิติ',
+    faculty: 'คณะวิทยาศาสตร์',
+    campus: 'วิทยาเขตหาดใหญ่',
+    campusCode: '01',
+    semester: '2/2569',
+    sections: [
+      {
+        sec: '01',
+        seats: '60 ที่นั่ง',
+        group: 'นักศึกษาทั่วไป',
+        isRestrictedGroup: false,
+        dayTime: 'จันทร์ 09:00–10:50, พุธ 09:00–10:50',
+        room: 'L1',
+        isOnline: false,
+        instructors: ['อ.ดร.วิภา แสงใส'],
+        // หมายเหตุ: ชนทั้งเวลาเรียนและวันสอบ Midterm กับ 322-101 Sec 01
+        midterm: '10 ม.ค. 2570 09:00–12:00',
+        final: '08 มี.ค. 2570 13:00–16:00',
+        slots: [
+          { day: 0, dayName: 'จันทร์', start: 540, end: 650, timeText: '09:00–10:50' },
+          { day: 2, dayName: 'พุธ', start: 540, end: 650, timeText: '09:00–10:50' },
+        ],
+      },
+      {
+        sec: '02',
+        seats: '45 ที่นั่ง',
+        group: 'เฉพาะนักศึกษาคณะวิศวกรรมศาสตร์ ชั้นปีที่ 1',
+        isRestrictedGroup: true,
+        dayTime: 'อังคาร 09:00–10:50, พฤหัสบดี 09:00–10:50',
+        room: 'E201',
+        isOnline: false,
+        instructors: ['ผศ.ดร.กิตติ วงศ์วาน'],
+        midterm: '12 ม.ค. 2570 13:00–16:00',
+        final: '08 มี.ค. 2570 13:00–16:00',
+        slots: [
+          { day: 1, dayName: 'อังคาร', start: 540, end: 650, timeText: '09:00–10:50' },
+          { day: 3, dayName: 'พฤหัสบดี', start: 540, end: 650, timeText: '09:00–10:50' },
+        ],
+      },
+      {
+        sec: '03',
+        seats: '70 ที่นั่ง',
+        group: 'นักศึกษาทั่วไป',
+        isRestrictedGroup: false,
+        dayTime: 'ศุกร์ 13:00–15:50',
+        room: 'CS204',
+        isOnline: false,
+        instructors: ['อ.ดร.ณัฐพงศ์ รักเรียน'],
+        // หมายเหตุ: Sec นี้ไม่ชนกับวิชาอื่น และเปิดให้นักศึกษาทั่วไปลงได้
+        midterm: '12 ม.ค. 2570 13:00–16:00',
+        final: '10 มี.ค. 2570 09:00–12:00',
+        slots: [
+          { day: 4, dayName: 'ศุกร์', start: 780, end: 950, timeText: '13:00–15:50' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'mock-895-001',
+    code: '895-001',
+    nameTh: 'พลเมืองที่ดี',
+    nameEn: 'GOOD CITIZENS',
+    credits: '2((2)-0-4) หน่วยกิต',
+    creditNum: 2,
+    desc: 'บทบาทหน้าที่ของพลเมืองในสังคมยุคดิจิทัล จิตสาธารณะ ความรับผิดชอบต่อสังคมและการอยู่ร่วมกันอย่างสันติ',
+    prerequisites: [],
+    prerequisiteText: '-',
+    dept: 'สำนักศึกษาทั่วไป',
+    faculty: 'สำนักงานอธิการบดี',
+    campus: 'วิทยาเขตหาดใหญ่',
+    campusCode: '01',
+    semester: '2/2569',
+    sections: [
+      {
+        sec: '01',
+        seats: '300 ที่นั่ง',
+        group: 'นักศึกษาทั่วไปทุกคณะ',
+        isRestrictedGroup: false,
+        dayTime: 'จันทร์ 10:00–11:50',
+        room: 'ONLINE (LMS)',
+        isOnline: true,
+        instructors: ['รศ.สุนิสา รักษ์ชาติ'],
+        // หมายเหตุ: ชนคาบเกี่ยวกับ 322-101 Sec 01 / 322-102 Sec 01 (10:00–10:50) และชนวันสอบ Final กับ 322-102 Sec 01/02
+        midterm: '-',
+        final: '08 มี.ค. 2570 13:00–15:00',
+        slots: [
+          { day: 0, dayName: 'จันทร์', start: 600, end: 710, timeText: '10:00–11:50' },
+        ],
+      },
+      {
+        sec: '02',
+        seats: '300 ที่นั่ง',
+        group: 'นักศึกษาทั่วไปทุกคณะ',
+        isRestrictedGroup: false,
+        dayTime: 'พุธ 13:00–14:50',
+        room: 'ONLINE (Zoom / LMS)',
+        isOnline: true,
+        instructors: ['อ.ปิยะ พัฒนากูล'],
+        midterm: '-',
+        final: '12 มี.ค. 2570 09:00–11:00',
+        slots: [
+          { day: 2, dayName: 'พุธ', start: 780, end: 890, timeText: '13:00–14:50' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'mock-961-101',
+    code: '961-101',
+    nameTh: 'ความรู้เท่าทันดิจิทัลในยุคสมัยใหม่',
+    nameEn: 'DIGITAL LITERACY FOR MODERN LIFE',
+    credits: '2((2)-0-4) หน่วยกิต',
+    creditNum: 2,
+    desc: 'ทักษะการใช้เทคโนโลยีดิจิทัลอย่างปลอดภัย รู้เท่าทันข่าวสาร และการป้องกันภัยไซเบอร์',
+    prerequisites: [],
+    prerequisiteText: '-',
+    dept: 'วิทยาลัยการคอมพิวเตอร์',
+    faculty: 'วิทยาเขตภูเก็ต',
+    campus: 'วิทยาเขตภูเก็ต',
+    campusCode: '03',
+    semester: '2/2569',
+    sections: [
+      {
+        sec: '01',
+        seats: '500 ที่นั่ง',
+        group: 'นักศึกษาทุกวิทยาเขต (เรียนออนไลน์ด้วยตนเอง)',
+        isRestrictedGroup: false,
+        dayTime: 'ไม่ระบุวัน-เวลา (เรียนออนไลน์ด้วยตนเอง)',
+        room: 'ONLINE (E-Learning)',
+        isOnline: true,
+        instructors: ['อ.ดร.ธนากร ศรีภูเก็ต'],
+        // หมายเหตุ: ตัวอย่างวิชาออนไลน์ที่ไม่มีตารางเวลาตายตัว (slots ว่าง)
+        midterm: '-',
+        final: '-',
+        slots: [],
+      },
+      {
+        sec: '02',
+        seats: '120 ที่นั่ง',
+        group: 'เฉพาะนักศึกษาวิทยาเขตภูเก็ต',
+        isRestrictedGroup: true,
+        dayTime: 'พฤหัสบดี 13:00–14:50',
+        room: 'ONLINE (MS Teams)',
+        isOnline: true,
+        instructors: ['อ.ดร.ธนากร ศรีภูเก็ต'],
+        // หมายเหตุ: ชนเวลาเรียนกับ 322-101 Sec 02 และจำกัดกลุ่มผู้เรียนเฉพาะวิทยาเขตภูเก็ต
+        midterm: '14 ม.ค. 2570 09:00–11:00',
+        final: '15 มี.ค. 2570 09:00–11:00',
+        slots: [
+          { day: 3, dayName: 'พฤหัสบดี', start: 780, end: 890, timeText: '13:00–14:50' },
+        ],
+      },
+    ],
+  },
+];
