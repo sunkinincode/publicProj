@@ -1,0 +1,171 @@
+/* Part 3: Timetable alerts, credit pill, clash highlights & lane layout */
+
+.sheet-header {
+  flex-wrap: wrap;
+}
+
+.sheet-header-left {
+  flex-wrap: wrap;
+}
+
+.credit-pill {
+  padding: 2px 9px;
+  border-radius: 99px;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  border: 1px solid var(--border-light);
+  background: var(--bg-subtle);
+  color: var(--ink-secondary);
+}
+
+.credit-pill.is-low {
+  background: #fffbeb;
+  border-color: #fcd34d;
+  color: #b45309;
+}
+
+.credit-pill.is-ok {
+  background: #f0fdfa;
+  border-color: #5eead4;
+  color: #0f766e;
+}
+
+.credit-pill.is-high {
+  background: #fff1f2;
+  border-color: #fda4af;
+  color: #be123c;
+}
+
+.timetable-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.alert-item.is-danger {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #9f1239;
+}
+
+.alert-item.is-warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.alert-badge {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.alert-item.is-danger .alert-badge {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+.alert-item.is-warning .alert-badge {
+  background: #d97706;
+  color: #ffffff;
+}
+
+.alert-text {
+  min-width: 0;
+  word-break: break-word;
+}
+
+/* Course blocks inside grid */
+.course-block.is-multi-lane {
+  padding: 3px 6px;
+}
+
+.course-block.is-restricted {
+  border-color: #d97706;
+  background: rgba(254, 243, 199, 0.92);
+}
+
+.course-block.is-clash {
+  border-color: #e11d48;
+  background: rgba(255, 228, 230, 0.95);
+  z-index: 3;
+}
+
+.course-block.is-clash .block-code {
+  color: #be123c;
+}
+
+.block-top-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.block-remove {
+  flex-shrink: 0;
+}
+
+.block-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.block-badge-clash,
+.block-badge-restricted {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+
+.block-badge-clash {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+.block-badge-restricted {
+  background: #f59e0b;
+  color: #ffffff;
+}
+
+.unscheduled-card.is-restricted {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+@media (max-width: 820px) {
+  .sheet-header {
+    align-items: flex-start;
+  }
+
+  .alert-item {
+    font-size: 0.74rem;
+    padding: 6px 9px;
+  }
+
+  .credit-pill {
+    font-size: 0.7rem;
+  }
+}
