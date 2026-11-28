@@ -23,6 +23,23 @@ function toCourseRef(course) {
 }
 
 /**
+ * แปลงคู่ (subject, section) เป็นออบเจ็กต์รายวิชาที่ลงทะเบียนในรูปแบบเดียวกับ App.jsx
+ */
+export function toEnrolledCourse(subject, section) {
+  return {
+    subjectId: subject.id,
+    code: subject.code,
+    nameTh: subject.nameTh,
+    nameEn: subject.nameEn,
+    creditNum: subject.creditNum,
+    campus: subject.campus,
+    prerequisites: subject.prerequisites,
+    sec: section.sec,
+    section,
+  };
+}
+
+/**
  * สรุปจำนวนหน่วยกิตรวมและสถานะเกณฑ์ลงทะเบียน (9–22 หน่วยกิต)
  */
 export function getCreditSummary(enrolledCourses = []) {
@@ -94,6 +111,37 @@ export function parseExamWindow(examText) {
     end,
     raw: trimmed,
   };
+}
+
+function sectionsHaveClassClash(sectionA, sectionB) {
+  const slotsA = sectionA?.slots || [];
+  const slotsB = sectionB?.slots || [];
+
+  for (const slotA of slotsA) {
+    for (const slotB of slotsB) {
+      if (slotA.day === slotB.day && slotA.start < slotB.end && slotB.start < slotA.end) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function sectionsHaveExamClash(sectionA, sectionB) {
+  for (const type of ['midterm', 'final']) {
+    const windowA = parseExamWindow(sectionA?.[type]);
+    const windowB = parseExamWindow(sectionB?.[type]);
+    if (
+      windowA &&
+      windowB &&
+      windowA.dateKey === windowB.dateKey &&
+      windowA.start < windowB.end &&
+      windowB.start < windowA.end
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -225,6 +273,277 @@ export function getRestrictedCourses(enrolledCourses = []) {
       sec: course.sec,
       group: course.section?.group || 'จำกัดกลุ่มผู้เรียน',
     }));
+}
+
+/**
+ * ตรวจสอบรายวิชาบังคับก่อน (prerequisites) ของวิชาที่เลือกอยู่ในตาราง
+ */
+export function detectPrerequisiteWarnings(
+  enrolledCourses = [],
+  subjects = [],
+  passedCodes = []
+) {
+  const enrolled = enrolledCourses || [];
+  const enrolledByCode = new Map();
+  for (const course of enrolled) {
+    if (course?.code) {
+      enrolledByCode.set(course.code, course);
+    }
+  }
+
+  const subjectByCode = new Map();
+  for (const subject of subjects || []) {
+    if (subject?.code) {
+      subjectByCode.set(subject.code, subject);
+    }
+  }
+
+  const passedSet = new Set(passedCodes || []);
+  const warnings = [];
+  const warningSubjectIds = new Set();
+
+  for (const course of enrolled) {
+    const prereqs = course?.prerequisites || [];
+    for (const reqCode of prereqs) {
+      const reqSubject = subjectByCode.get(reqCode) || enrolledByCode.get(reqCode);
+      const reqNameTh = reqSubject?.nameTh || '';
+      const reqLabel = reqNameTh ? `${reqCode} (${reqNameTh})` : reqCode;
+
+      if (enrolledByCode.has(reqCode)) {
+        warningSubjectIds.add(course.subjectId);
+        warnings.push({
+          id: `concurrent-${course.subjectId}-${reqCode}`,
+          type: 'concurrent',
+          subjectId: course.subjectId,
+          code: course.code,
+          nameTh: course.nameTh,
+          sec: course.sec,
+          reqCode,
+          reqNameTh,
+          message: `${course.code} ${course.nameTh} ต้องสอบผ่าน ${reqLabel} มาก่อน (ไม่สามารถลงเรียนพร้อมกันในเทอมเดียวกันได้)`,
+        });
+      } else if (!passedSet.has(reqCode)) {
+        warningSubjectIds.add(course.subjectId);
+        warnings.push({
+          id: `unverified-${course.subjectId}-${reqCode}`,
+          type: 'unverified',
+          subjectId: course.subjectId,
+          code: course.code,
+          nameTh: course.nameTh,
+          sec: course.sec,
+          reqCode,
+          reqNameTh,
+          message: `${course.code} ${course.nameTh} มีวิชาบังคับก่อนคือ ${reqLabel}`,
+        });
+      }
+    }
+  }
+
+  return { warnings, warningSubjectIds };
+}
+
+/**
+ * คืนรายการ Section อื่นของวิชานี้ พร้อมสถานะชนเวลา/ชนสอบ/จำกัดกลุ่ม เมื่อเทียบกับวิชาอื่นในตาราง
+ */
+export function getAlternativeSections(subject, currentSec, enrolledCourses = []) {
+  if (!subject || !Array.isArray(subject.sections)) {
+    return [];
+  }
+
+  const otherCourses = (enrolledCourses || []).filter(
+    (course) => course.subjectId !== subject.id
+  );
+
+  return subject.sections
+    .filter((section) => section.sec !== currentSec)
+    .map((section) => {
+      let hasClassClash = false;
+      let hasExamClash = false;
+
+      for (const other of otherCourses) {
+        if (sectionsHaveClassClash(section, other.section)) {
+          hasClassClash = true;
+        }
+        if (sectionsHaveExamClash(section, other.section)) {
+          hasExamClash = true;
+        }
+        if (hasClassClash && hasExamClash) {
+          break;
+        }
+      }
+
+      return {
+        section,
+        hasClassClash,
+        hasExamClash,
+        isRestricted: section.isRestrictedGroup === true,
+      };
+    });
+}
+
+function computeScheduleMetrics(courses) {
+  const totalCredits = courses.reduce(
+    (sum, course) => sum + (Number(course?.creditNum) || 0),
+    0
+  );
+
+  const slotsByDay = new Map();
+  let restrictedCount = 0;
+
+  for (const course of courses) {
+    if (course.section?.isRestrictedGroup === true) {
+      restrictedCount += 1;
+    }
+    for (const slot of course.section?.slots || []) {
+      if (!slotsByDay.has(slot.day)) {
+        slotsByDay.set(slot.day, []);
+      }
+      slotsByDay.get(slot.day).push(slot);
+    }
+  }
+
+  const studyDays = slotsByDay.size;
+  let gapMinutes = 0;
+
+  for (const daySlots of slotsByDay.values()) {
+    let minStart = Infinity;
+    let maxEnd = -Infinity;
+    let classMinutes = 0;
+
+    for (const slot of daySlots) {
+      if (slot.start < minStart) minStart = slot.start;
+      if (slot.end > maxEnd) maxEnd = slot.end;
+      classMinutes += Math.max(0, slot.end - slot.start);
+    }
+
+    if (maxEnd > minStart) {
+      gapMinutes += Math.max(0, maxEnd - minStart - classMinutes);
+    }
+  }
+
+  const examClashCount = detectExamClashes(courses).length;
+
+  return {
+    totalCredits,
+    studyDays,
+    restrictedCount,
+    examClashCount,
+    gapMinutes,
+  };
+}
+
+/**
+ * จัดตารางอัตโนมัติ (Auto-Scheduler) จากรายวิชาที่ผู้ใช้เลือก
+ */
+export function generateAutoSchedules(selectedSubjects = [], options = {}) {
+  const {
+    avoidExamClash = true,
+    avoidRestricted = true,
+    maxResults = 30,
+  } = options;
+
+  const subjects = (selectedSubjects || []).filter(Boolean);
+  if (subjects.length === 0) {
+    return { results: [], reason: 'empty' };
+  }
+
+  const prepared = [];
+  for (let orderIdx = 0; orderIdx < subjects.length; orderIdx += 1) {
+    const subject = subjects[orderIdx];
+    const candidates = (subject.sections || []).filter(
+      (section) => !avoidRestricted || !section.isRestrictedGroup
+    );
+
+    if (candidates.length === 0) {
+      return {
+        results: [],
+        reason: 'no_sections',
+        blockingSubject: subject,
+      };
+    }
+
+    prepared.push({ subject, candidates, orderIdx });
+  }
+
+  const ordered = [...prepared].sort(
+    (a, b) => a.candidates.length - b.candidates.length
+  );
+
+  const MAX_COLLECT = 100;
+  const rawCombinations = [];
+  const chosen = new Array(ordered.length);
+
+  function backtrack(depth) {
+    if (rawCombinations.length >= MAX_COLLECT) {
+      return;
+    }
+
+    if (depth === ordered.length) {
+      const inOriginalOrder = new Array(subjects.length);
+      for (let i = 0; i < ordered.length; i += 1) {
+        inOriginalOrder[ordered[i].orderIdx] = toEnrolledCourse(
+          ordered[i].subject,
+          chosen[i]
+        );
+      }
+      rawCombinations.push(inOriginalOrder);
+      return;
+    }
+
+    const { candidates } = ordered[depth];
+    for (const candidate of candidates) {
+      let conflict = false;
+      for (let prev = 0; prev < depth; prev += 1) {
+        const prevSec = chosen[prev];
+        if (sectionsHaveClassClash(candidate, prevSec)) {
+          conflict = true;
+          break;
+        }
+        if (avoidExamClash && sectionsHaveExamClash(candidate, prevSec)) {
+          conflict = true;
+          break;
+        }
+      }
+
+      if (!conflict) {
+        chosen[depth] = candidate;
+        backtrack(depth + 1);
+      }
+    }
+  }
+
+  backtrack(0);
+
+  if (rawCombinations.length === 0) {
+    return { results: [], reason: 'no_combination' };
+  }
+
+  const scored = rawCombinations.map((courses) => {
+    const metrics = computeScheduleMetrics(courses);
+    return {
+      id: courses.map((c) => `${c.code}:${c.sec}`).join('|'),
+      courses,
+      ...metrics,
+    };
+  });
+
+  scored.sort((a, b) => {
+    if (a.examClashCount !== b.examClashCount) {
+      return a.examClashCount - b.examClashCount;
+    }
+    if (a.restrictedCount !== b.restrictedCount) {
+      return a.restrictedCount - b.restrictedCount;
+    }
+    if (a.studyDays !== b.studyDays) {
+      return a.studyDays - b.studyDays;
+    }
+    return a.gapMinutes - b.gapMinutes;
+  });
+
+  return {
+    results: scored.slice(0, maxResults),
+    reason: 'ok',
+  };
 }
 
 /**

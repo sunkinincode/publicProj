@@ -76,7 +76,10 @@ export default function App() {
         <div className="board-column">
           <ThemePanelSlot />
           <TimetableGrid
+            subjects={subjects}
             enrolledCourses={enrolledCourses}
+            onToggleCourseSec={handleToggleCourseSec}
+            onReplaceSchedule={setEnrolledCourses}
             onRemoveCourse={handleRemoveCourse}
             onClearSchedule={handleClearSchedule}
           />
