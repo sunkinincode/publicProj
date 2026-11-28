@@ -1,0 +1,51 @@
+{
+  "updatedAt": "2026-11-28T14:50:34.339Z",
+  "defaultSemester": "2569-2",
+  "defaultCampus": "01",
+  "semesters": [
+    {
+      "id": "2569-2",
+      "label": "2/2569",
+      "term": "2",
+      "year": "2569",
+      "totalSubjects": 4650,
+      "campuses": [
+        {
+          "code": "01",
+          "name": "วิทยาเขตหาดใหญ่",
+          "shortName": "หาดใหญ่",
+          "subjectCount": 2326,
+          "file": "data/2569-2/01.json"
+        },
+        {
+          "code": "02",
+          "name": "วิทยาเขตปัตตานี",
+          "shortName": "ปัตตานี",
+          "subjectCount": 1279,
+          "file": "data/2569-2/02.json"
+        },
+        {
+          "code": "03",
+          "name": "วิทยาเขตภูเก็ต",
+          "shortName": "ภูเก็ต",
+          "subjectCount": 373,
+          "file": "data/2569-2/03.json"
+        },
+        {
+          "code": "04",
+          "name": "วิทยาเขตสุราษฎร์ธานี",
+          "shortName": "สุราษฎร์ธานี",
+          "subjectCount": 465,
+          "file": "data/2569-2/04.json"
+        },
+        {
+          "code": "05",
+          "name": "วิทยาเขตตรัง",
+          "shortName": "ตรัง",
+          "subjectCount": 207,
+          "file": "data/2569-2/05.json"
+        }
+      ]
+    }
+  ]
+}

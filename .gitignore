@@ -3,6 +3,9 @@ node_modules
 dist
 dist-ssr
 
+# Local Cache & Scraper Checkpoints
+.cache
+
 # Local Environment & Editor Files
 .env
 .env.local
